@@ -16,9 +16,6 @@
             android:name=".ProfilActivity"
             android:exported="false" />
         <activity
-            android:name=".FavActivity"
-            android:exported="false" />
-        <activity
             android:name=".MainActivity"
             android:exported="false" />
         <activity

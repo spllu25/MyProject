@@ -1,5 +1,6 @@
 package com.example.myproject
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -20,6 +21,7 @@ class RegActivity : AppCompatActivity() {
         val userNumb: EditText = findViewById(R.id.numbPhone)
         val userPass: EditText = findViewById(R.id.passReg)
         val buttonReg: Button = findViewById(R.id.buttonRegister)
+        val buttonLogin: Button = findViewById(R.id.buttonLogin)
 
         buttonReg.setOnClickListener {
             val surname = userSurname.text.toString().trim()
@@ -32,7 +34,7 @@ class RegActivity : AppCompatActivity() {
                 Toast.makeText(this, "Заполните все поля", Toast.LENGTH_SHORT).show()
             } else {
                 val user = User(surname, name, dadname, login, pass)
-                val db = dbHelp(this, null)
+                val db = dbUser(this, null)
                 CoroutineScope(Dispatchers.Main).launch {
                     val isAdded = db.addUser(user)
                     if (isAdded) {
@@ -47,6 +49,10 @@ class RegActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+        buttonLogin.setOnClickListener {
+            val intent = Intent(this, AuthActivity::class.java)
+            startActivity(intent)
         }
     }
 }

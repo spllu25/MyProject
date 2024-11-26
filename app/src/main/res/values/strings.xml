@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">MyProject</string>
-    <string name="textCard1">ТОРТИкииии</string>
-    <string name="textCard2">Торт</string>
+    <string name="title1">ТОРТИкииии</string>
+    <string name="txt1">Торт</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

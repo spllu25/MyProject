@@ -1,33 +1,51 @@
 package com.example.myproject
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.EditText
-import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        if (chooseManager.dbHelper == null) {
+            chooseManager.initialize(this)
         }
 
-        val intent = Intent(this, FavActivity::class.java)
-        val textCard1: TextView = findViewById(R.id.textView21)
+        replaceFragment(HomeFragment())
 
-        // Передаем данные карточки
-        intent.putExtra("card_text", textCard1.text.toString().trim())
-        intent.putExtra("card_image", R.drawable.image1)
+        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+        bottomNavigationView.setOnItemSelectedListener { menuItem ->
+            val fragment = when (menuItem.itemId) {
+                R.id.nav_home -> HomeFragment()
+                R.id.nav_favorites -> FavFragment()
+                R.id.nav_new_order -> NewOrderFragment()
+                R.id.nav_cart -> CartFragment()
+                R.id.nav_profile -> ProfileFragment()
+                else -> null
+            }
+            fragment?.let { replaceFragment(it) }
+            true
+        }
+    }
 
-        startActivity(intent)
-
+    private fun replaceFragment(fragment: Fragment) {
+        CoroutineScope(Dispatchers.Main).launch {
+            withContext(Dispatchers.IO) {
+                chooseManager.saveCards()
+            }
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit()
+        }
     }
 }
+

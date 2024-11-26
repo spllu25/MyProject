@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class dbHelp(val context: Context, val factory: SQLiteDatabase.CursorFactory?) :
+class dbUser(val context: Context, val factory: SQLiteDatabase.CursorFactory?) :
     SQLiteOpenHelper(context, "app", factory, 1) {
 
     override fun onCreate(db: SQLiteDatabase?) {
@@ -96,23 +96,4 @@ class dbHelp(val context: Context, val factory: SQLiteDatabase.CursorFactory?) :
         return@withContext null
     }
 
-    suspend fun addOrder(userId: Int, orderDetails: String) = withContext(Dispatchers.IO) {
-        val values = ContentValues().apply {
-            put("user_id", userId)
-            put("order_details", orderDetails)
-        }
-        val db = writableDatabase
-        db.insert("orders", null, values)
-        db.close()
-    }
-
-    suspend fun addFavorite(userId: Int, itemDetails: String) = withContext(Dispatchers.IO) {
-        val values = ContentValues().apply {
-            put("user_id", userId)
-            put("item_details", itemDetails)
-        }
-        val db = writableDatabase
-        db.insert("favorites", null, values)
-        db.close()
-    }
 }

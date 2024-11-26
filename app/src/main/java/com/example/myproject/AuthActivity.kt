@@ -26,7 +26,7 @@ class AuthActivity : AppCompatActivity() {
             if (login.isEmpty() || pass.isEmpty()) {
                 Toast.makeText(this, "Заполните все поля", Toast.LENGTH_SHORT).show()
             } else {
-                val db = dbHelp(this, null)
+                val db = dbUser(this, null)
 
                 CoroutineScope(Dispatchers.Main).launch {
                     val user = db.getUser(login, pass)
@@ -40,7 +40,7 @@ class AuthActivity : AppCompatActivity() {
                             putString("pass", user.pass)
                             apply()
                         }
-                        val intent = Intent(this@AuthActivity, ProfilActivity::class.java)
+                        val intent = Intent(this@AuthActivity, MainActivity::class.java)
                         startActivity(intent)
                     } else {
                         Toast.makeText(this@AuthActivity, "Неверно", Toast.LENGTH_SHORT).show()
