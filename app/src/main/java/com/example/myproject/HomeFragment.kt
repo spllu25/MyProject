@@ -1,6 +1,5 @@
 package com.example.myproject
 
-import androidx.fragment.app.viewModels
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,38 +12,31 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
 class HomeFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         val cardsList: RecyclerView = view.findViewById(R.id.cards)
-
         cardsList.layoutManager = LinearLayoutManager(requireContext())
 
         CoroutineScope(Dispatchers.Main).launch {
-            val dbCards = withContext(Dispatchers.IO) {
-                chooseManager.dbHelper?.loadCards() ?: listOf()
-            }.toMutableList()
+            val userId = (requireActivity() as MainActivity).getUserId()
 
-            if (dbCards.isEmpty()) {
+            val userCards = withContext(Dispatchers.IO) {
+                chooseManager.dbHelper?.loadCards(userId)?.toMutableList() ?: mutableListOf()
+            }
+            if (userCards.isEmpty()) {
                 val staticCards = listOf(
                     Card(1, "image1", getString(R.string.title1), getString(R.string.txt1), false, false, 0)
                 )
-                dbCards.addAll(staticCards)
                 withContext(Dispatchers.IO) {
-                    for (card in staticCards) {
-                        chooseManager.dbHelper?.saveCard(card)
-                    }
+                    chooseManager.dbHelper?.saveCard(staticCards[0], userId)
                 }
+                userCards.addAll(staticCards)
             }
-
-            cardsList.adapter = cardAdapter(dbCards, requireContext(), false)
+            cardsList.adapter = cardAdapter(userCards, requireContext(), false, userId)
         }
-
         return view
     }
-
-
 }
 

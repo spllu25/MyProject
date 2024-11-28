@@ -13,27 +13,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-/*class FavFragment : Fragment() {
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_fav, container, false)
-        val favCardsList: RecyclerView = view.findViewById(R.id.favcards)
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val cards = withContext(Dispatchers.IO) {
-                chooseManager.dbHelper?.loadCards()?.filter { it.isFav } ?: listOf()
-            }.toMutableList()
-
-            favCardsList.layoutManager = LinearLayoutManager(requireContext())
-            favCardsList.adapter = cardAdapter(cards, requireContext(), false)
-
-        }
-        return view
-    }
-}*/
 class FavFragment : Fragment() {
     private lateinit var favCardsList: RecyclerView
 
@@ -50,11 +29,13 @@ class FavFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         CoroutineScope(Dispatchers.Main).launch {
+            val userId = (requireActivity() as MainActivity).getUserId()
             val cards = withContext(Dispatchers.IO) {
-                chooseManager.dbHelper?.loadCards()?.filter { it.isFav } ?: listOf()
+                chooseManager.dbHelper?.loadCards(userId)?.filter { it.isFav } ?: listOf()
             }
             favCardsList.layoutManager = LinearLayoutManager(requireContext())
-            favCardsList.adapter = cardAdapter(cards.toMutableList(), requireContext(), false)
+            favCardsList.adapter = cardAdapter(cards.toMutableList(), requireContext(), false, userId)
+            favCardsList.adapter?.notifyDataSetChanged()
         }
     }
 }

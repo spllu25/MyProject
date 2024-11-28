@@ -1,6 +1,7 @@
 package com.example.myproject
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -11,13 +12,14 @@ import kotlinx.coroutines.withContext
 
 
 class MainActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val userId = intent.getIntExtra("userId", -1)
+        Log.e("MyFragment", "Received User ID: $userId")
         if (chooseManager.dbHelper == null) {
-            chooseManager.initialize(this)
+            chooseManager.initialize(this, userId)
         }
 
         replaceFragment(HomeFragment())
@@ -46,6 +48,9 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.fragment_container, fragment)
                 .commit()
         }
+    }
+    fun getUserId(): Int {
+        return intent.getIntExtra("userId", -1)
     }
 }
 

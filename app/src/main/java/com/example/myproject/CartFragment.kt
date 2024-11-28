@@ -13,26 +13,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-/*class CartFragment : Fragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_cart, container, false)
-        val purchCardsList: RecyclerView = view.findViewById(R.id.addedcards)
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val cards = withContext(Dispatchers.IO) {
-                chooseManager.dbHelper?.loadCards()?.filter { it.isPurch } ?: listOf()
-            }
-            purchCardsList.layoutManager = LinearLayoutManager(requireContext())
-            purchCardsList.adapter = cardAdapter(cards.toMutableList(), requireContext(), true)
-
-        }
-
-        return view
-    }
-}*/
 class CartFragment : Fragment() {
     private lateinit var purchCardsList: RecyclerView
 
@@ -49,11 +29,13 @@ class CartFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         CoroutineScope(Dispatchers.Main).launch {
+            val userId = (requireActivity() as MainActivity).getUserId()
             val cards = withContext(Dispatchers.IO) {
-                chooseManager.dbHelper?.loadCards()?.filter { it.isPurch } ?: listOf()
+                chooseManager.dbHelper?.loadCards(userId)?.filter { it.isPurch } ?: listOf()
             }
             purchCardsList.layoutManager = LinearLayoutManager(requireContext())
-            purchCardsList.adapter = cardAdapter(cards.toMutableList(), requireContext(), true)
+            purchCardsList.adapter = cardAdapter(cards.toMutableList(), requireContext(), true, userId)
+            purchCardsList.adapter?.notifyDataSetChanged()
         }
     }
 

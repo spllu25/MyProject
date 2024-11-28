@@ -8,27 +8,34 @@ import kotlinx.coroutines.launch
 object chooseManager {
     private val chosenCards = mutableListOf<Card>()
     var dbHelper: dbCard? = null
+    private var currentUserId: Int? = null
 
-    fun initialize(context: Context) {
+
+    fun initialize(context: Context, userId: Int) {
         dbHelper = dbCard(context)
         CoroutineScope(Dispatchers.IO).launch {
-            loadCards()
+            loadCards(userId)
         }
     }
-    suspend fun loadCards() {
+
+    suspend fun loadCards(userId: Int) {
         dbHelper?.let {
-            val cards = it.loadCards()
+            val cards = it.loadCards(userId)
             chosenCards.clear()
             chosenCards.addAll(cards)
         }
     }
+
     suspend fun saveCards() {
-        dbHelper?.let { db ->
-            db.clearCards()
-            for (card in chosenCards) {
-                db.saveCard(card)
+        currentUserId?.let { userId ->
+            dbHelper?.let { db ->
+                db.clearCards(userId)
+                for (card in chosenCards) {
+                    db.saveCard(card, userId)
+                }
             }
         }
     }
 }
+
 

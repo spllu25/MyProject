@@ -15,8 +15,10 @@ import kotlinx.coroutines.launch
 class cardAdapter(
     private var cards: MutableList<Card>,
     private val context: Context,
-    private val isCartFragment: Boolean
+    private val isCartFragment: Boolean,
+    val userId : Int
 ) : RecyclerView.Adapter<cardAdapter.myViewHolder>() {
+
 
     class myViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val img: ImageView = view.findViewById(R.id.image)
@@ -54,7 +56,7 @@ class cardAdapter(
 
             CoroutineScope(Dispatchers.IO).launch {
                 chooseManager.dbHelper?.updateIsFav(card.id, card.isFav)
-                chooseManager.loadCards()
+                chooseManager.loadCards(userId)
             }
         }
 
@@ -82,7 +84,7 @@ class cardAdapter(
             CoroutineScope(Dispatchers.IO).launch {
                 chooseManager.dbHelper?.updateQuantity(card.id, card.quantity)
                 chooseManager.dbHelper?.updateIsPurch(card.id, card.isPurch)
-                chooseManager.loadCards()
+                chooseManager.loadCards(userId)
             }
         }
     }

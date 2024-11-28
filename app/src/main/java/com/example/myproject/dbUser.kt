@@ -95,5 +95,19 @@ class dbUser(val context: Context, val factory: SQLiteDatabase.CursorFactory?) :
         db.close()
         return@withContext null
     }
+    suspend fun getUserIdByLogin(login: String): Int = withContext(Dispatchers.IO) {
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT id FROM users WHERE login=?", arrayOf(login))
+        if (cursor.moveToFirst()) {
+            val userId = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+            cursor.close()
+            db.close()
+            return@withContext userId
+        }
+        cursor.close()
+        db.close()
+        return@withContext -1
+    }
+
 
 }

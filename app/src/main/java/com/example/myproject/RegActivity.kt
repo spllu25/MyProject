@@ -2,6 +2,7 @@ package com.example.myproject
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -35,9 +36,17 @@ class RegActivity : AppCompatActivity() {
             } else {
                 val user = User(surname, name, dadname, login, pass)
                 val db = dbUser(this, null)
+
                 CoroutineScope(Dispatchers.Main).launch {
                     val isAdded = db.addUser(user)
                     if (isAdded) {
+                        val userId = db.getUserIdByLogin(login)
+                        Log.e("RFragment", "Received User ID: $userId")
+                        val sharedPreferences = getSharedPreferences("UserData_$userId", MODE_PRIVATE)
+                        with(sharedPreferences.edit()) {
+                            putInt("userId", userId)
+                            apply()
+                        }
                         Toast.makeText(this@RegActivity, "$login добавлен", Toast.LENGTH_SHORT).show()
                         userSurname.text.clear()
                         userName.text.clear()
@@ -50,6 +59,7 @@ class RegActivity : AppCompatActivity() {
                 }
             }
         }
+
         buttonLogin.setOnClickListener {
             val intent = Intent(this, AuthActivity::class.java)
             startActivity(intent)
