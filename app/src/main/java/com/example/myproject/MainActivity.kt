@@ -1,7 +1,6 @@
 package com.example.myproject
 
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -15,14 +14,26 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val navigateToProfile = intent.getBooleanExtra("navigateToProfile", false)
+        val navigateToCart = intent.getBooleanExtra("navigateToCart", false)
+        val navigateToHome = intent.getBooleanExtra("navigateToHome", false)
 
+        if (navigateToProfile) {
+            replaceFragment(ProfileFragment())
+        }
+        if (navigateToCart) {
+            replaceFragment(CartFragment())
+        }
+        if (navigateToHome) {
+            replaceFragment(HomeFragment())
+        }
         val userId = intent.getIntExtra("userId", -1)
-        Log.e("MyFragment", "Received User ID: $userId")
+
         if (chooseManager.dbHelper == null) {
             chooseManager.initialize(this, userId)
         }
 
-        replaceFragment(HomeFragment())
+       // replaceFragment(HomeFragment())
 
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.setOnItemSelectedListener { menuItem ->

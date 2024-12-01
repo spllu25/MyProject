@@ -33,11 +33,18 @@ class cardAdapter(
         return myViewHolder(view)
     }
 
-    override fun getItemCount(): Int = cards.size
+    override fun getItemCount(): Int {
+        return cards.size
+    }
+
+    fun updateCards(newCards: List<Card>) {
+        cards.clear()
+        cards.addAll(newCards)
+        notifyDataSetChanged()
+    }
 
     override fun onBindViewHolder(holder: myViewHolder, position: Int) {
         val card = cards[position]
-
         if (isCartFragment) {
             holder.likedButton.isEnabled = false
         }
@@ -48,7 +55,7 @@ class cardAdapter(
         holder.img.setImageResource(imgId)
 
         holder.likedButton.text = if (card.isFav) "★" else "☆"
-        holder.toBuyButton.text = if (card.quantity > 0) "+(${card.quantity})" else "+"
+        holder.toBuyButton.text = if (card.quantityPurch > 0) "+(${card.quantityPurch})" else "+"
 
         holder.likedButton.setOnClickListener {
             card.isFav = !card.isFav
@@ -62,27 +69,27 @@ class cardAdapter(
 
         holder.toBuyButton.setOnClickListener {
             if (isCartFragment) {
-                if (card.quantity > 1) {
-                    card.quantity -= 1
-                    holder.toBuyButton.text = "+(${card.quantity})"
+                if (card.quantityPurch > 1) {
+                    card.quantityPurch -= 1
+                    holder.toBuyButton.text = "+(${card.quantityPurch})"
                 }
                 else if (card.isPurch) {
                     card.isPurch = false
-                    card.quantity = 0
+                    card.quantityPurch = 0
                     holder.toBuyButton.text = "+"
                 }
             }
             else {
                 if (!card.isPurch) {
                     card.isPurch = true
-                    card.quantity = 1
+                    card.quantityPurch = 1
                 } else {
-                    card.quantity += 1
+                    card.quantityPurch += 1
                 }
-                holder.toBuyButton.text = "+(${card.quantity})"
+                holder.toBuyButton.text = "+(${card.quantityPurch})"
             }
             CoroutineScope(Dispatchers.IO).launch {
-                chooseManager.dbHelper?.updateQuantity(card.id, card.quantity)
+                chooseManager.dbHelper?.updateQuantity(card.id, card.quantityPurch)
                 chooseManager.dbHelper?.updateIsPurch(card.id, card.isPurch)
                 chooseManager.loadCards(userId)
             }

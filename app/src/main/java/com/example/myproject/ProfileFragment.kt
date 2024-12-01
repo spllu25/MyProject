@@ -11,27 +11,43 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ProfileFragment : Fragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    private lateinit var newOrdersList: RecyclerView
+    private lateinit var archiveOrdersList: RecyclerView
 
-        val view= inflater.inflate(R.layout.fragment_profile, container, false)
-        val usercardsList: RecyclerView = view.findViewById(R.id.usercards)
-        val cards = arrayListOf<Card>()
-        val userId = (requireActivity() as MainActivity).getUserId()
-        val sharedPreferences = requireContext().getSharedPreferences("UserData_$userId", MODE_PRIVATE)
-        usercardsList.layoutManager = LinearLayoutManager(requireContext())
-        usercardsList.adapter = cardAdapter(cards, requireContext(), false, userId)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val view = inflater.inflate(R.layout.fragment_profile, container, false)
 
-        val buttonSignup: Button = view.findViewById(R.id.button)
-        buttonSignup.setOnClickListener {
-            val intent = Intent(context, ProfilActivity::class.java)
-            intent.putExtra("userId", userId)
-            startActivity(intent)
+        newOrdersList = view.findViewById(R.id.newOrdersList)
+        archiveOrdersList = view.findViewById(R.id.archiveOrdersList)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            val userId = (requireActivity() as MainActivity).getUserId()
+
+            val orders = withContext(Dispatchers.IO) {
+                dbOrders(requireContext()).loadOrders(userId)
+            }
+
+            val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+            val newOrders = orders.filter { it.date >= currentDate }
+            val archiveOrders = orders.filter { it.date < currentDate }
+
+            newOrdersList.layoutManager = LinearLayoutManager(requireContext())
+            archiveOrdersList.layoutManager = LinearLayoutManager(requireContext())
+
+            newOrdersList.adapter = OrderAdapter(newOrders)
+            archiveOrdersList.adapter = OrderAdapter(archiveOrders)
         }
+
         return view
     }
 }
+

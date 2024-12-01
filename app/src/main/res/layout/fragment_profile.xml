@@ -3,19 +3,56 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center">
+    android:padding="16dp">
 
+    <!-- Заголовок для раздела "Новые заказы" -->
+    <TextView
+        android:id="@+id/newOrdersTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Новые заказы"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp" />
+
+    <!-- Список для новых заказов -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/usercards"
+        android:id="@+id/newOrdersList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp"
+        android:background="#EEEEEE" />
+
+    <!-- Заголовок для раздела "Архив" -->
+    <TextView
+        android:id="@+id/archiveTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Архив заказов"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Список для архивных заказов -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/archiveOrdersList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#EEEEEE" />
+
+    <!-- Кнопка для настройки профиля -->
     <Button
-        android:id="@+id/button"
-        android:layout_width="220dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="20dp"
-        android:layout_gravity="center"
-        android:text="Настройки профиля" />
+        android:id="@+id/buttonProfileSettings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Настройки профиля"
+        android:background="?attr/colorPrimary"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:padding="12dp" />
 
 </LinearLayout>

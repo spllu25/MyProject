@@ -19,6 +19,7 @@ class dbCard(context: Context) : SQLiteOpenHelper(context, "cards.db", null, 1) 
             image TEXT NOT NULL,
             isFav INTEGER NOT NULL,
             isPurch INTEGER NOT NULL,
+            isOrdered INTEGER NOT NULL DEFAULT 0, 
             quantity INTEGER NOT NULL DEFAULT 0,
             FOREIGN KEY(userId) REFERENCES users(id)
         )
@@ -41,12 +42,34 @@ class dbCard(context: Context) : SQLiteOpenHelper(context, "cards.db", null, 1) 
             put("image", card.img)
             put("isFav", if (card.isFav) 1 else 0)
             put("isPurch", if (card.isPurch) 1 else 0)
-            put("quantity", card.quantity)
+            put("quantity", card.quantityPurch)
             put("userId", userId)
         }
         db.insertOrThrow("cards", null, values)
         db.close()
     }
+
+    suspend fun saveOrder(
+        userId: Int,
+        clientName: String,
+        address: String,
+        orderDate: String,
+        totalCost: String,
+        cards: List<Card>
+    ) = withContext(Dispatchers.IO) {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put("userId", userId)
+            put("clientName", clientName)
+            put("address", address)
+            put("orderDate", orderDate)
+            put("totalCost", totalCost)
+
+        }
+        db.insert("orders", null, values)
+        db.close()
+    }
+
 
     fun generateCardId(userId: Int, localId: Int): Int {
         return userId * 10000 + localId
@@ -72,7 +95,8 @@ class dbCard(context: Context) : SQLiteOpenHelper(context, "cards.db", null, 1) 
                 img = cursor.getString(cursor.getColumnIndexOrThrow("image")),
                 isFav = cursor.getInt(cursor.getColumnIndexOrThrow("isFav")) == 1,
                 isPurch = cursor.getInt(cursor.getColumnIndexOrThrow("isPurch")) == 1,
-                quantity = cursor.getInt(cursor.getColumnIndexOrThrow("quantity"))
+                isOrdered = cursor.getInt(cursor.getColumnIndexOrThrow("isOrdered")) == 1,
+                quantityPurch = cursor.getInt(cursor.getColumnIndexOrThrow("quantityP"))
             )
             cards.add(card)
         }
@@ -106,6 +130,15 @@ class dbCard(context: Context) : SQLiteOpenHelper(context, "cards.db", null, 1) 
         db.update("cards", values, "id=?", arrayOf(cardId.toString()))
         db.close()
     }
+    suspend fun updateIsOrdered(cardId: Int, isOrdered: Boolean) = withContext(Dispatchers.IO) {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put("isOrdered", if (isOrdered) 1 else 0)
+        }
+        db.update("cards", values, "id=?", arrayOf(cardId.toString()))
+        db.close()
+    }
+
 
     suspend fun updateQuantity(cardId: Int, quantity: Int) = withContext(Dispatchers.IO) {
         val db = writableDatabase

@@ -2,7 +2,6 @@ package com.example.myproject
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -33,10 +32,11 @@ class AuthActivity : AppCompatActivity() {
                     val user = db.getUser(login, pass)
                     if (user != null) {
                         val userId = db.getUserIdByLogin(login)
-                        Log.e("AFragment", "Received User ID: $userId")
                         val intent = Intent(this@AuthActivity, MainActivity::class.java)
                         intent.putExtra("userId", userId)
+                        intent.putExtra("navigateToHome", true)
                         startActivity(intent)
+                        finish()
                     } else {
                         Toast.makeText(this@AuthActivity, "Неверно", Toast.LENGTH_SHORT).show()
                     }

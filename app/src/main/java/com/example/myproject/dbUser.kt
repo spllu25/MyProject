@@ -95,6 +95,27 @@ class dbUser(val context: Context, val factory: SQLiteDatabase.CursorFactory?) :
         db.close()
         return@withContext null
     }
+
+    suspend fun getUserById(userId: Int): User? = withContext(Dispatchers.IO) {
+        val db = readableDatabase
+        val query = db.rawQuery("SELECT * FROM users WHERE id=?", arrayOf(userId.toString()))
+        if (query.moveToFirst()) {
+            val user = User(
+                query.getString(query.getColumnIndexOrThrow("surname")),
+                query.getString(query.getColumnIndexOrThrow("name")),
+                query.getString(query.getColumnIndexOrThrow("dadname")),
+                query.getString(query.getColumnIndexOrThrow("login")),
+                query.getString(query.getColumnIndexOrThrow("password"))
+            )
+            query.close()
+            db.close()
+            return@withContext user
+        }
+        query.close()
+        db.close()
+        return@withContext null
+    }
+
     suspend fun getUserIdByLogin(login: String): Int = withContext(Dispatchers.IO) {
         val db = readableDatabase
         val cursor = db.rawQuery("SELECT id FROM users WHERE login=?", arrayOf(login))
@@ -108,6 +129,16 @@ class dbUser(val context: Context, val factory: SQLiteDatabase.CursorFactory?) :
         db.close()
         return@withContext -1
     }
-
+    suspend fun updateUser(user: User,userId: Int) = withContext(Dispatchers.IO) {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put("name", user.name)
+            put("surname", user.surname)
+            put("dadname", user.dadname)
+            put("login", user.login)
+            put("password", user.pass)
+        }
+        db.update("users", values, "id = ?", arrayOf(userId.toString()))
+    }
 
 }

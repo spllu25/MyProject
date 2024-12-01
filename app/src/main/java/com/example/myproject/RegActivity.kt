@@ -41,10 +41,14 @@ class RegActivity : AppCompatActivity() {
                     val isAdded = db.addUser(user)
                     if (isAdded) {
                         val userId = db.getUserIdByLogin(login)
-                        Log.e("RFragment", "Received User ID: $userId")
                         val sharedPreferences = getSharedPreferences("UserData_$userId", MODE_PRIVATE)
                         with(sharedPreferences.edit()) {
                             putInt("userId", userId)
+                            putString("surname", user.surname)
+                            putString("name", user.name)
+                            putString("dadname", user.dadname)
+                            putString("login", user.login)
+                            putString("password", user.pass)
                             apply()
                         }
                         Toast.makeText(this@RegActivity, "$login добавлен", Toast.LENGTH_SHORT).show()
