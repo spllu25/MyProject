@@ -7,6 +7,9 @@ import android.database.sqlite.SQLiteOpenHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+class User(val surname: String,val name: String, val dadname: String, val login: String, val pass: String) {}
+
+
 class dbUser(val context: Context, val factory: SQLiteDatabase.CursorFactory?) :
     SQLiteOpenHelper(context, "app", factory, 1) {
 

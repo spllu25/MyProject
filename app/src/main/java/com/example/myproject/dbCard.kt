@@ -7,22 +7,36 @@ import android.database.sqlite.SQLiteOpenHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+data class Card(
+    val id: Int,
+    val title: String,
+    val txt: String,
+    val img: String,
+    var isFav: Boolean,
+    var isPurch: Boolean,
+    var isOrdered: Boolean,
+    var quantityPurch: Int,
+    val date: String
+)
+
 class dbCard(context: Context) : SQLiteOpenHelper(context, "cards.db", null, 1) {
 
     override fun onCreate(db: SQLiteDatabase?) {
         val createTableQuery = """
         CREATE TABLE cards (
-            id INTEGER PRIMARY KEY,
-            userId INTEGER NOT NULL,
-            title TEXT NOT NULL,
-            description TEXT NOT NULL,
-            image TEXT NOT NULL,
-            isFav INTEGER NOT NULL,
-            isPurch INTEGER NOT NULL,
-            isOrdered INTEGER NOT NULL DEFAULT 0, 
-            quantity INTEGER NOT NULL DEFAULT 0,
-            FOREIGN KEY(userId) REFERENCES users(id)
-        )
+    id INTEGER PRIMARY KEY,
+    userId INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    image TEXT NOT NULL,
+    isFav INTEGER NOT NULL,
+    isPurch INTEGER NOT NULL,
+    isOrdered INTEGER NOT NULL DEFAULT 0, 
+    quantity INTEGER NOT NULL DEFAULT 0,
+    date TEXT, 
+    FOREIGN KEY(userId) REFERENCES users(id)
+)
+
     """.trimIndent()
         db?.execSQL(createTableQuery)
     }
@@ -43,6 +57,7 @@ class dbCard(context: Context) : SQLiteOpenHelper(context, "cards.db", null, 1) 
             put("isFav", if (card.isFav) 1 else 0)
             put("isPurch", if (card.isPurch) 1 else 0)
             put("quantity", card.quantityPurch)
+            put("date", card.date)
             put("userId", userId)
         }
         db.insertOrThrow("cards", null, values)
@@ -53,20 +68,26 @@ class dbCard(context: Context) : SQLiteOpenHelper(context, "cards.db", null, 1) 
         userId: Int,
         clientName: String,
         address: String,
-        orderDate: String,
+        date: String,
         totalCost: String,
         cards: List<Card>
     ) = withContext(Dispatchers.IO) {
         val db = writableDatabase
-        val values = ContentValues().apply {
-            put("userId", userId)
-            put("clientName", clientName)
-            put("address", address)
-            put("orderDate", orderDate)
-            put("totalCost", totalCost)
-
+        cards.forEach { card ->
+            val values = ContentValues().apply {
+                put("id", generateCardId(userId, card.id + 1))
+                put("title", card.title)
+                put("description", card.txt)
+                put("image", card.img)
+                put("isFav", 0)
+                put("isPurch", 0)
+                put("isOrdered", 1)
+                put("quantity", card.quantityPurch)
+                put("date", date)
+                put("userId", userId)
+            }
+            db.insertOrThrow("cards", null, values)
         }
-        db.insert("orders", null, values)
         db.close()
     }
 
@@ -96,7 +117,8 @@ class dbCard(context: Context) : SQLiteOpenHelper(context, "cards.db", null, 1) 
                 isFav = cursor.getInt(cursor.getColumnIndexOrThrow("isFav")) == 1,
                 isPurch = cursor.getInt(cursor.getColumnIndexOrThrow("isPurch")) == 1,
                 isOrdered = cursor.getInt(cursor.getColumnIndexOrThrow("isOrdered")) == 1,
-                quantityPurch = cursor.getInt(cursor.getColumnIndexOrThrow("quantityP"))
+                quantityPurch = cursor.getInt(cursor.getColumnIndexOrThrow("quantity")),
+                date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
             )
             cards.add(card)
         }
@@ -130,15 +152,6 @@ class dbCard(context: Context) : SQLiteOpenHelper(context, "cards.db", null, 1) 
         db.update("cards", values, "id=?", arrayOf(cardId.toString()))
         db.close()
     }
-    suspend fun updateIsOrdered(cardId: Int, isOrdered: Boolean) = withContext(Dispatchers.IO) {
-        val db = writableDatabase
-        val values = ContentValues().apply {
-            put("isOrdered", if (isOrdered) 1 else 0)
-        }
-        db.update("cards", values, "id=?", arrayOf(cardId.toString()))
-        db.close()
-    }
-
 
     suspend fun updateQuantity(cardId: Int, quantity: Int) = withContext(Dispatchers.IO) {
         val db = writableDatabase
@@ -149,3 +162,4 @@ class dbCard(context: Context) : SQLiteOpenHelper(context, "cards.db", null, 1) 
         db.close()
     }
 }
+

@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Заголовок для раздела "Новые заказы" -->
     <TextView
         android:id="@+id/newOrdersTitle"
         android:layout_width="wrap_content"
@@ -16,7 +15,6 @@
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp" />
 
-    <!-- Список для новых заказов -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/newOrdersList"
         android:layout_width="match_parent"
@@ -25,7 +23,6 @@
         android:layout_marginBottom="16dp"
         android:background="#EEEEEE" />
 
-    <!-- Заголовок для раздела "Архив" -->
     <TextView
         android:id="@+id/archiveTitle"
         android:layout_width="wrap_content"
@@ -35,7 +32,6 @@
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
-    <!-- Список для архивных заказов -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/archiveOrdersList"
         android:layout_width="match_parent"
@@ -43,7 +39,6 @@
         android:layout_weight="1"
         android:background="#EEEEEE" />
 
-    <!-- Кнопка для настройки профиля -->
     <Button
         android:id="@+id/buttonProfileSettings"
         android:layout_width="match_parent"

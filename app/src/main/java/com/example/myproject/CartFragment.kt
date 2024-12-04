@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
@@ -17,20 +18,27 @@ import kotlinx.coroutines.withContext
 
 class CartFragment : Fragment() {
     private lateinit var purchCardsList: RecyclerView
+    private lateinit var adapter: cardAdapter
+    private var userId: Int =-1
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val view = inflater.inflate(R.layout.fragment_cart, container, false)
         purchCardsList = view.findViewById(R.id.addedCards)
-        val buttonBuy: Button = view.findViewById(R.id.buttonBuy)
-        buttonBuy.setOnClickListener {
-            CoroutineScope(Dispatchers.Main).launch {
-                val userId = (requireActivity() as MainActivity).getUserId()
-                val intent = Intent(context, OformlActivity::class.java)
-                intent.putExtra("cost", 100)
-                intent.putExtra("userId", userId)
+        userId = (requireActivity() as MainActivity).getUserId()
+
+        adapter = cardAdapter(mutableListOf(), requireContext(), true, userId)
+        purchCardsList.layoutManager = LinearLayoutManager(requireContext())
+        purchCardsList.adapter = adapter
+
+        view.findViewById<Button>(R.id.buttonBuy).setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch {
+                val intent = Intent(context, OformlActivity::class.java).apply {
+                    putExtra("cost", 100)
+                    putExtra("userId", userId)
+                }
                 startActivity(intent)
             }
         }
@@ -39,15 +47,16 @@ class CartFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        CoroutineScope(Dispatchers.Main).launch {
-            val userId = (requireActivity() as MainActivity).getUserId()
+        loadCards()
+    }
+
+    private fun loadCards() {
+        viewLifecycleOwner.lifecycleScope.launch {
             val cards = withContext(Dispatchers.IO) {
                 chooseManager.dbHelper?.loadCards(userId)?.filter { it.isPurch } ?: listOf()
             }
-            purchCardsList.layoutManager = LinearLayoutManager(requireContext())
-            purchCardsList.adapter = cardAdapter(cards.toMutableList(), requireContext(), true, userId)
-            purchCardsList.adapter?.notifyDataSetChanged()
+            adapter.updateCards(cards.toMutableList())
         }
     }
-
 }
+

@@ -7,14 +7,18 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 
 class OformlActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_oforml)
@@ -32,39 +36,63 @@ class OformlActivity : AppCompatActivity() {
         val db = dbUser(this, null)
         val dbOrd = dbCard(this)
 
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             val user = withContext(Dispatchers.IO) { db.getUserById(userId) }
-            if (user != null) { client.setText(user.surname) }
-            else {
-                Toast.makeText(this@OformlActivity, "Пользователь не найден", Toast.LENGTH_SHORT).show()
-            }
+            user?.let {
+                client.setText(user.surname)
+            } ?: Toast.makeText(this@OformlActivity, "Пользователь не найден", Toast.LENGTH_SHORT).show()
         }
 
         buttonBuy.setOnClickListener {
-            if (client.text.isNullOrEmpty() || address.text.isNullOrEmpty() || date.text.isNullOrEmpty()) {
-                Toast.makeText(this, "Заполните все поля!", Toast.LENGTH_SHORT).show()
-            } else {
-                CoroutineScope(Dispatchers.Main).launch {
-                    withContext(Dispatchers.IO) {
-                        val cards=chooseManager.dbHelper?.loadCards(userId)?.filter { it.isPurch }?: listOf()
-                        dbOrd.saveOrder(userId, client.text.toString(), address.text.toString(), date.text.toString(),cost.text.toString(),cards)
+            val inputDate = date.text.toString()
+            val currentDate = Calendar.getInstance()
+            currentDate.add(Calendar.DAY_OF_YEAR, 1)
+            val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-                        cards.forEach { card ->
-                            chooseManager.dbHelper?.updateIsPurch(card.id, false)
-                            chooseManager.dbHelper?.updateIsOrdered(card.id, true)
-                        }
+            try {
+                val parsedDate = formatter.parse(inputDate)
+                if (parsedDate != null && parsedDate.before(currentDate.time)) {
+                    Toast.makeText(this, "Дата должна быть не раньше завтрашнего дня!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+            } catch (e: ParseException) {
+                Toast.makeText(this, "Введите корректную дату в формате yyyy-MM-dd", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    val originalCards = chooseManager.dbHelper?.loadCards(userId)?.filter { it.isPurch } ?: listOf()
+                    val updatedCards = originalCards.map { originalCard ->
+                        originalCard.copy(
+                            id = chooseManager.dbHelper!!.generateCardId(userId, originalCard.id + 1),
+                            isOrdered = true,
+                            date = inputDate
+                        )
                     }
 
-                    Toast.makeText(this@OformlActivity, "Заказ оформлен!", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this@OformlActivity, MainActivity::class.java)
-                    intent.putExtra("navigateToProfile", true)
-                    startActivity(intent)
-                    finish()
+                    updatedCards.forEach { newCard ->
+                        chooseManager.dbHelper?.saveCard(newCard, userId)
+                    }
+
+                    originalCards.forEach { originalCard ->
+                        chooseManager.dbHelper?.updateIsPurch(originalCard.id, false)
+                    }
+
+                    chooseManager.dbHelper?.saveOrder(
+                        userId, client.text.toString(), address.text.toString(),
+                        inputDate, cost.text.toString(), updatedCards
+                    )
                 }
+
+                Toast.makeText(this@OformlActivity, "Заказ оформлен!", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this@OformlActivity, MainActivity::class.java)
+                startActivity(intent)
+                finish()
             }
         }
-
     }
 }
+
 
 
